@@ -2,8 +2,9 @@
 
 from MojoFastTrim import FastqRecord, RecordCoord
 from collections import Dict
-from tensor import Tensor
-
+from tensor import Tensor, TensorShape
+from MojoFastTrim.helpers import write_to_buff
+from math import max
 
 alias MAX_COUNTS = 1_000_000
 
@@ -11,23 +12,25 @@ alias MAX_COUNTS = 1_000_000
 struct Stats(Stringable):
     var num_reads: Int64
     var total_bases: Int64
-    #var sequences: Dict[FastqRecord, Int]
-    #var unique_counts: Int
-    #var length_vector: DynamicVector[Int]
+    var sequences: Dict[FastqRecord, Int]
+    var unique_counts: Int
+    var length_vector: Tensor[DType.int64]
 
     fn __init__(inout self):
         self.num_reads = 0
         self.total_bases = 0
-        # self.sequences = Dict[FastqRecord, Int]()
-        # self.unique_counts = 0
-        # self.length_vector = DynamicVector[Int]()
+        self.sequences = Dict[FastqRecord, Int]()
+        self.unique_counts = 0
+        self.length_vector = Tensor[DType.int64](1)
 
     @always_inline
     fn tally(inout self, record: FastqRecord):
         self.num_reads += 1
         self.total_bases += record.SeqStr.num_elements()
-
-        #self.length_vector.push_back(record.SeqStr.num_elements())
+        
+        #Length Distribution
+        self._check_grow_tensor(self.length_vector, record.SeqStr.num_elements())
+        self.length_vector[record.SeqStr.num_elements() - 1] += 1
 
         # if self.num_reads > MAX_COUNTS:
         #     return
@@ -46,11 +49,17 @@ struct Stats(Stringable):
         self.num_reads += 1
         self.total_bases += record.seq_len().to_int()
 
-    # fn length_average(self) -> Float64:
-    #     var cum = 0
-    #     for i in range(len(self.length_vector)):
-    #         cum += self.length_vector[i]
-    #     return cum / len(self.length_vector)
+    fn length_average(self) -> Float64:
+        var cum: Int64 = 0
+        for i in range(self.length_vector.num_elements()):
+            cum += self.length_vector[i] * (i + 1)
+        return cum.to_int() / self.num_reads.to_int()
+
+    fn _check_grow_tensor[T: DType](self, inout old_tensor: Tensor[T], ele: Int):
+        if old_tensor.num_elements() < ele:
+            var new_tensor = Tensor[T](ele)
+            write_to_buff(old_tensor, new_tensor, 0)
+            old_tensor = new_tensor
 
     fn __str__(self) -> String:
         return (
@@ -61,7 +70,7 @@ struct Stats(Stringable):
             + self.total_bases
             + ".\n"
             + "Number of Unique reads: "
-            # + len(self.sequences)
-            # + "\nAverage Sequence length:"
-            #+ self.length_average()
+            + len(self.sequences)
+            + "\nAverage Sequence length:"
+            + self.length_average()
         )
