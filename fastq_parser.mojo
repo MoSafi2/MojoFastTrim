@@ -112,6 +112,7 @@ struct FastqParser:
         self._chunk_pos = 0
         self._file_pos += self._chunk_last_index
 
+
     # # BUG: Over estimation of the number of reads with threads > 1
     # # TODO: Make the number of workers Modifable
     # fn parse_parallel(inout self, num_workers: Int) raises:
