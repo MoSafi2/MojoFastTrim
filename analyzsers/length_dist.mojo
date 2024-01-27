@@ -25,7 +25,7 @@ struct LengthDistribution(Analyser, Stringable):
         return self.length_vector
 
     fn __str__(self) -> String:
-        return self.length_vector
+        return String("\nLength Distribution: ")+self.length_vector
 
 
 fn grow_tensor[

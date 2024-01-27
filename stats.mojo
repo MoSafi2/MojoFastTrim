@@ -5,6 +5,8 @@ from collections import Dict
 from tensor import Tensor, TensorShape
 from MojoFastTrim.helpers import write_to_buff
 from math import max
+from MojoFastTrim.analyzsers.bp_dist import BasepairDistribution
+from MojoFastTrim.analyzsers.length_dist import LengthDistribution
 
 alias MAX_COUNTS = 1_000_000
 
@@ -20,21 +22,24 @@ trait Analyser:
 struct Stats(Stringable):
     var num_reads: Int64
     var total_bases: Int64
-    var unique_counts: Int
+    var bp_dist: BasepairDistribution
+    var len_dist: LengthDistribution
+
 
     fn __init__(inout self):
         self.num_reads = 0
         self.total_bases = 0
-        # self.sequences = Dict[FastqRecord, Int]()
-        self.unique_counts = 0
+        
+        self.len_dist = LengthDistribution()
+        self.bp_dist = BasepairDistribution()
 
     # Consider using Internal function for each type to get this, there is no need to know the impelemtnation of each type, this can get Ugly if you want to Add BAM, SAM .. etc.
     @always_inline
     fn tally(inout self, record: FastqRecord):
         self.num_reads += 1
         self.total_bases += record.SeqStr.num_elements()
-
-
+        self.bp_dist.tally_read(record)
+        self.len_dist.tally_read(record)
 
     fn __str__(self) -> String:
         return (
@@ -43,8 +48,8 @@ struct Stats(Stringable):
             + ". \n"
             + "Number of bases: "
             + self.total_bases
-            + ".\n"
-            + "Number of Unique reads: "
+            + self.bp_dist
+            + self.len_dist
         )
 
 
