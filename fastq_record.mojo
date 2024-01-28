@@ -7,6 +7,7 @@ from MojoFastTrim.CONSTS import read_header, new_line, quality_header, USE_SIMD
 from MojoFastTrim import fnv1a32, fnv1a64
 from math import min
 
+
 @value
 struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
     """Struct that represent a single FastaQ record."""
@@ -117,10 +118,15 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
     # Consider changing hash function to another performant one.
     @always_inline
     fn __hash__(self) -> Int:
-        return hash(self.SeqStr._ptr, min(self.SeqStr.num_elements(), 50))
-        #return fnv1a64(self.get_seq()[0:50]).to_int()
-        #return fnv1a32(self.get_seq()[0:50]).to_int()
-        
+        var hash = SIMD[DType.uint64, 4]()
+        var index = 0
+        for i in range(3):
+            let a = self.SeqStr.simd_load[16](0)
+            let b = a % 5
+            for j in range(len(b)):
+                hash[i] += b[j].to_int() * 10**j
+        return hash.reduce_add().to_int()
+
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
         return self.SeqStr == other.SeqStr
