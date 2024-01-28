@@ -14,7 +14,7 @@ struct BasepairDistribution(Analyser, Stringable):
         self.max_shape = 0
 
     fn tally_read(inout self, record: FastqRecord):
-        if record.SeqStr.num_elements()> self.max_shape:
+        if record.SeqStr.num_elements() > self.max_shape:
             self.max_shape = record.SeqStr.num_elements()
 
         ## BUG: For some reason the following does not work
@@ -33,19 +33,24 @@ struct BasepairDistribution(Analyser, Stringable):
     fn report(self) -> Tensor[DType.int64]:
         let final_shape = TensorShape(5, self.max_shape)
         var final_t = Tensor[DType.int64](5, self.max_shape)
-        for i in range(final_t.num_elements()):
-            final_t[i] = self.bp_dist[i]
+
+        for i in range(5):
+            for j in range(self.max_shape):
+                let index = VariadicList[Int](i, j)
+                final_t[index] = self.bp_dist[index]
         return final_t
-        #return self.bp_dist
 
     fn __str__(self) -> String:
         return String("\nBase_pair_dist_matrix: ") + self.report()
 
 
-fn grow_tensor[
+fn grow_matrix[
     T: DType,
 ](old_tensor: Tensor[T], num_ele: Int) -> Tensor[T]:
     let new_shape = TensorShape(5, num_ele)
     var new_tensor = Tensor[T](new_shape)
-    write_to_buff(old_tensor, new_tensor, 0)
+    for i in range(5):
+        for j in range(old_tensor.num_elements() / 5):
+            let index = VariadicList[Int](i, j)
+            new_tensor[index] = old_tensor[index]
     return new_tensor
