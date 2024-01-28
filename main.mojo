@@ -15,14 +15,13 @@ fn main() raises:
 
     # Parse all records in one pass, Fastest
     parser.parse_all()
-    print(parser.parsing_stats)
-    
-    ## Parse all records iterativly.
+    #print(parser.parsing_stats)
+
+    # Parse all records iterativly.
     # let t1 = time.now()
     # while True:
     #     try:
     #         let record = parser.next()
-
     #         if parser.parsing_stats.num_reads % 1_000_000 == 0:
     #             let num = parser.parsing_stats.num_reads
     #             let t = time.now()

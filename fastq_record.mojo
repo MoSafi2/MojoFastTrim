@@ -6,6 +6,7 @@ from collections import KeyElement
 from MojoFastTrim.CONSTS import read_header, new_line, quality_header, USE_SIMD
 from MojoFastTrim import fnv1a32, fnv1a64
 from math import min
+import time
 
 
 @value
@@ -116,20 +117,23 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
         return self.SeqStr.num_elements()
 
     # Consider changing hash function to another performant one.
+    # Hashing the first 48 Neuclotides from each read, average 380 ns, 20x faster than the internal hash function.
+    # Could be used as key
     @always_inline
     fn __hash__(self) -> Int:
         var hash = SIMD[DType.uint64, 4]()
         var index = 0
         for i in range(3):
-            let a = self.SeqStr.simd_load[16](0)
+            let a = self.SeqStr.simd_load[16](16 * i)
             let b = a % 5
             for j in range(len(b)):
                 hash[i] += b[j].to_int() * 10**j
-        return hash.reduce_add().to_int()
+        let final_hash = hash.reduce_add().to_int()
+        return final_hash
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
-        return self.SeqStr == other.SeqStr
+        return self.__hash__() == other.__hash__()
 
 
 # @always_inline
