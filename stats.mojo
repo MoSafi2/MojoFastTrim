@@ -7,6 +7,8 @@ from MojoFastTrim.helpers import write_to_buff
 from math import max
 from MojoFastTrim.analyzsers.bp_dist import BasepairDistribution
 from MojoFastTrim.analyzsers.length_dist import LengthDistribution
+from MojoFastTrim.analyzsers.quality_dist import QualityDistribution
+
 
 alias MAX_COUNTS = 1_000_000
 
@@ -24,14 +26,15 @@ struct Stats(Stringable):
     var total_bases: Int64
     var bp_dist: BasepairDistribution
     var len_dist: LengthDistribution
-
+    var qu_dist: QualityDistribution
 
     fn __init__(inout self):
         self.num_reads = 0
         self.total_bases = 0
-        
+
         self.len_dist = LengthDistribution()
         self.bp_dist = BasepairDistribution()
+        self.qu_dist = QualityDistribution()
 
     # Consider using Internal function for each type to get this, there is no need to know the impelemtnation of each type, this can get Ugly if you want to Add BAM, SAM .. etc.
     @always_inline
@@ -40,6 +43,7 @@ struct Stats(Stringable):
         self.total_bases += record.SeqStr.num_elements()
         self.bp_dist.tally_read(record)
         self.len_dist.tally_read(record)
+        self.qu_dist.tally_read(record)
 
     fn __str__(self) -> String:
         return (
@@ -50,6 +54,5 @@ struct Stats(Stringable):
             + self.total_bases
             + self.bp_dist
             + self.len_dist
+            + self.qu_dist
         )
-
-
