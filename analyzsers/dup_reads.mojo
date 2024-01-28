@@ -9,11 +9,11 @@ alias MAX_READS = 100_000
 
 
 struct DupReader(Analyser, Stringable):
-    var unique_dict: Dict[FastqRecord, Int]
+    var unique_dict: Dict[FastqRecord, Int16]
     var unique_reads: Int
 
     fn __init__(inout self):
-        self.unique_dict = Dict[FastqRecord, Int]()
+        self.unique_dict = Dict[FastqRecord, Int16]()
         self.unique_reads = 0
 
     fn tally_read(inout self, record: FastqRecord):
@@ -22,11 +22,10 @@ struct DupReader(Analyser, Stringable):
                 self.unique_dict[record] += 1
                 return
             except:
-                print("failed insert")
                 return
 
         if self.unique_reads < MAX_READS:
-            self.unique_dict[record] = 0
+            self.unique_dict[record] = 1
             self.unique_reads += 1
         else:
             pass
