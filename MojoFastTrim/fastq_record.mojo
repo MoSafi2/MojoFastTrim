@@ -18,6 +18,7 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
     var QuHeader: Tensor[DType.int8]
     var QuStr: Tensor[DType.int8]
     var total_length: Int
+    var hash: Int
 
     fn __init__(
         inout self,
@@ -61,6 +62,8 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
             + QS.num_elements()
             + 4  # Addition of 4 \n again
         )
+
+        self.hash = -1
 
     fn get_seq(self) -> String:
         var t = self.SeqStr
@@ -138,6 +141,9 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
                 hash[i] += b[j].to_int() * 10**j
         let final_hash = hash.reduce_add().to_int()
         return final_hash
+
+    fn set_hash(inout self):
+        self.hash = self.__hash__()
 
     # Can be used as a rotating hash, Should be used to adatpers also?
     # @always_inline
