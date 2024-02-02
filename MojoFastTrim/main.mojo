@@ -15,7 +15,7 @@ fn main() raises:
 
     # Parse all records in one pass, Fastest
     parser.parse_all()
-    #print(parser.parsing_stats)
+    print(parser.parsing_stats)
 
     # Parse all records iterativly.
     # let t1 = time.now()
