@@ -119,6 +119,14 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
     # Consider changing hash function to another performant one.
     # Hashing the first 48 Neuclotides from each read, average 380 ns, 20x faster than the internal hash function.
     # Could be used as key
+
+    # Extremely slow
+    # @always_inline
+    # fn __hash__(self) -> Int:
+    #     let a = self.SeqStr.simd_load[32](0) & 0x03
+    #     return math.bitcast[DType.uint64, 4](a).reduce_add().to_int()
+
+    # 10% Faster in execution for some reason
     @always_inline
     fn __hash__(self) -> Int:
         var hash = SIMD[DType.uint64, 4]()
