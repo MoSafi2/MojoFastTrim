@@ -5,11 +5,7 @@ from collections import Dict
 from tensor import Tensor, TensorShape
 from MojoFastTrim.helpers import write_to_buff
 from math import max
-from MojoFastTrim.analyzsers.bp_dist import BasepairDistribution
-from MojoFastTrim.analyzsers.length_dist import LengthDistribution
-from MojoFastTrim.analyzsers.quality_dist import QualityDistribution
-from MojoFastTrim.analyzsers.dup_reads import DupReader
-from MojoFastTrim.analyzsers.cg_content import CGContent
+from MojoFastTrim.analyzers import *
 
 alias MAX_COUNTS = 1_000_000
 
