@@ -45,8 +45,8 @@ struct Stats(Stringable):
         self.bp_dist.tally_read(record)
         self.len_dist.tally_read(record)
         self.qu_dist.tally_read(record)
-        self.dup_reads.tally_read(record)
-        self.cg_content.tally_read(record)
+        self.dup_reads.tally_read(record) #Most expensive 3.5s for 5.5 M reads
+        self.cg_content.tally_read(record) #Almost Free
 
     fn __str__(self) -> String:
         return (

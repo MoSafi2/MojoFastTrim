@@ -65,10 +65,6 @@ fn grow_matrix[T: DType](old_tensor: Tensor[T], num_ele: Int) -> Tensor[T]:
     except Error:
         print("Error", Error)
 
-    # for i in range(WIDTH):
-    #     for j in range((old_tensor.num_elements() / WIDTH).to_int()):
-    #         let index = VariadicList[Int](i, j)
-    #         new_tensor[index] = old_tensor[index]
     return new_tensor
 
 
@@ -80,7 +76,6 @@ From left to right, check the sum of every to consecutive numbers, if the number
 accumate one to CpG counter
 at the end, divide the number by the read length, accumulate 1 to the CpG Tensor at the end of the rounded number.
 """
-
 
 
 struct CGContent(Analyser, Stringable):
@@ -112,16 +107,15 @@ struct CGContent(Analyser, Stringable):
         return String("\nThe CpG content tensor is: ") + self.cg_content
 
 
-
 alias MAX_READS = 100_000
 
 
 struct DupReader(Analyser, Stringable):
-    var unique_dict: Dict[FastqRecord, Int16]
+    var unique_dict: Dict[FastqRecord, Int64]
     var unique_reads: Int
 
     fn __init__(inout self):
-        self.unique_dict = Dict[FastqRecord, Int16]()
+        self.unique_dict = Dict[FastqRecord, Int64]()
         self.unique_reads = 0
 
     fn tally_read(inout self, record: FastqRecord):
@@ -171,7 +165,7 @@ struct LengthDistribution(Analyser, Stringable):
         return self.length_vector
 
     fn __str__(self) -> String:
-        return String("\nLength Distribution: ")+self.length_vector
+        return String("\nLength Distribution: ") + self.length_vector
 
 
 fn grow_tensor[

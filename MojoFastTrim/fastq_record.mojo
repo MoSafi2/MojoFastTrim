@@ -126,7 +126,7 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
     #     let a = self.SeqStr.simd_load[32](0) & 0x03
     #     return math.bitcast[DType.uint64, 4](a).reduce_add().to_int()
 
-    # 10% Faster in execution for some reason
+    # # 10% Faster in execution for some reason
     @always_inline
     fn __hash__(self) -> Int:
         var hash = SIMD[DType.uint64, 4]()
@@ -138,6 +138,16 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
                 hash[i] += b[j].to_int() * 10**j
         let final_hash = hash.reduce_add().to_int()
         return final_hash
+
+    # Can be used as a rotating hash, Should be used to adatpers also?
+    # @always_inline
+    # fn __hash__(self) -> Int:
+    #     var hash: Int = 1
+    #     let ele = self.SeqStr.simd_load[32](0) & 0x03
+    #     for i in range(31):
+    #         hash = hash << 2
+    #         hash += ele[i].to_int()
+    #     return hash
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
