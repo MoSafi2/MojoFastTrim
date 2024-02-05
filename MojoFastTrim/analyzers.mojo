@@ -4,10 +4,14 @@ from MojoFastTrim import FastqRecord
 from tensor import TensorShape
 from collections import Dict, KeyElement
 from math import round
+import time
 
 
 alias MAX_LENGTH = 10_000
 alias WIDTH = 5
+alias MAX_READS = 100_000
+alias MAX_QUALITY = 100
+alias OFFSET = 33
 
 
 struct BasepairDistribution(Analyser, Stringable):
@@ -107,9 +111,6 @@ struct CGContent(Analyser, Stringable):
         return String("\nThe CpG content tensor is: ") + self.cg_content
 
 
-alias MAX_READS = 100_000
-
-
 struct DupReader(Analyser, Stringable):
     var unique_dict: Dict[FastqRecord, Int64]
     var unique_reads: Int
@@ -177,9 +178,6 @@ fn grow_tensor[
     return new_tensor
 
 
-alias MAX_QUALITY = 100
-alias OFFSET = 33
-
 # TODO: The encoding of the Fastq file should be predicted and used
 # FROM: https://www.biostars.org/p/90845/
 # RANGES = {
@@ -226,3 +224,12 @@ struct QualityDistribution(Analyser, Stringable):
 
     fn __str__(self) -> String:
         return String("\nQuality_dist_matrix: ") + self.report()
+
+
+fn main():
+    let x = 500545425586454578
+    let y = 500545425586454578
+    let t1 = time.now()
+    let z = x == y
+    let t2 = time.now()
+    print(z, t2-t1)

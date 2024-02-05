@@ -1,6 +1,12 @@
+"""
+The idea of this module would be to compute a rolling hash of Kmers of known length (Either 4, 8, 16, 32) Necleotides 
+Which will be compared to hashes of adapters of similair length. Hashes of adapters should be pre-computed. 
+"""
+
 from collections import Dict, KeyElement
 import MojoFastTrim
 import time
+
 
 # TODO: Implemente a rolling DNA hashing algorithm
 
