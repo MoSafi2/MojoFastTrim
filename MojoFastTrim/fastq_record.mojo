@@ -121,13 +121,6 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
 
     # Consider changing hash function to another performant one.
     # Hashing the first 48 Neuclotides from each read, average 380 ns, 20x faster than the internal hash function.
-    # Could be used as key
-
-    # Extremely slow
-    # @always_inline
-    # fn __hash__(self) -> Int:
-    #     let a = self.SeqStr.simd_load[32](0) & 0x03
-    #     return math.bitcast[DType.uint64, 4](a).reduce_add().to_int()
 
     # # 10% Faster in execution for some reason
     @always_inline
@@ -146,14 +139,33 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
         self.hash = self.__hash__()
 
     # Can be used as a rotating hash, Should be used to adatpers also?
-    # @always_inline
-    # fn __hash__(self) -> Int:
-    #     var hash: Int = 1
-    #     let ele = self.SeqStr.simd_load[32](0) & 0x03
-    #     for i in range(31):
-    #         hash = hash << 2
-    #         hash += ele[i].to_int()
-    #     return hash
+    @always_inline
+    fn init_hash(self) -> Int:
+        var hash: Int = 1
+        let ele = self.SeqStr.simd_load[32](0) & 0x03
+        for i in range(31):
+            hash = hash << 2
+            hash += ele[i].to_int()
+        return hash
+
+    # This still very inefficient.
+    @always_inline
+    fn rot_hash(self, start: Int) -> Int:
+        if start == 0:
+            return self.hash
+        elif start < 16:
+            var hash = self.hash
+            for i in range(1, start):
+                hash = (hash & 0x3FFFFFFFFFFFFFFF) << 2
+                hash += self.SeqStr[i + 31].to_int()
+            return hash
+        else:
+            var hash: Int = 1
+            let ele = self.SeqStr.simd_load[32](start) & 0x03
+            for i in range(31):
+                hash = hash << 2
+                hash += ele[i].to_int()
+            return hash
 
     @always_inline
     fn __eq__(self, other: Self) -> Bool:
@@ -218,3 +230,15 @@ struct FastqRecord(CollectionElement, Sized, Stringable, KeyElement):
 #         + record.QuStr.num_elements()
 #         + 4
 #     )
+
+
+fn main() raises:
+    var l1 = Tensor[DType.int8](100)
+    let l2 = Tensor[DType.int8](100)
+    var l3 = Tensor[DType.int8](100)
+    let l4 = Tensor[DType.int8](100)
+    l1[0] = 64
+    l3[0] = 43
+
+    let read = FastqRecord(l1, l2, l3, l4)
+    print(read.rot_hash(0))
