@@ -1,3 +1,4 @@
-fn main():
-    var t: UInt64 = 0xFFFFFFFFFFFFFFFF
-    print(((t & 0x3FFFFFFFFFFFFFFF) << 2) + 0)
+fn main() raises:
+
+    with open("test_file.txt", "r") as f:
+        f.read_bytes() 
